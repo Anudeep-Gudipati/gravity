@@ -16,7 +16,7 @@ LOCAL_GRAVITY_BUILDDIR ?= /gopath/src/github.com/gravitational/gravity/build/$(G
 
 include ../versions.mk
 
-DOCKER_ARGS ?= --pull
+DOCKER_ARGS ?=
 NOROOT=-u $$(id -u):$$(id -g)
 BBOX = gravity-buildbox:latest
 

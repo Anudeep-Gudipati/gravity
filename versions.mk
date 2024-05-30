@@ -5,7 +5,7 @@ ETCD_VER ?= 2.3.7
 # abbreviated gravity version to use as a build ID
 GRAVITY_VERSION ?= $(shell ./version.sh)
 # current Kubernetes version
-K8S_VER ?= 1.21.5
+K8S_VER ?= 1.27
 # Kubernetes version suffix for the planet package, constructed by concatenating
 # major + minor padded to 2 chars with 0 + patch also padded to 2 chars, e.g.
 # 1.13.5 -> 11305, 1.13.12 -> 11312, 2.0.0 -> 20000 and so on
