@@ -104,59 +104,6 @@ subjects:
 - kind: Group
   name: restricted-psp-users
 ---
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: restricted
-  annotations:
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default
-spec:
-  runAsUser:
-    rule: MustRunAs
-    ranges:
-      - min: 2000
-        max: 65000
-  supplementalGroups:
-    rule: RunAsAny
-  fsGroup:
-    rule: RunAsAny
-  requiredDropCapabilities:
-    - NET_ADMIN
-    - SYS_ADMIN
-    - SYS_CHROOT
-  seLinux:
-    rule: RunAsAny
-  hostNetwork: false
-  volumes:
-  - '*'
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: privileged
-  annotations:
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default
-spec:
-  privileged: true
-  hostPorts:
-    - min: 1024
-      max: 65535
-  runAsUser:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  fsGroup:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  hostNetwork: true
-  hostPID: true
-  hostIPC: true
-  volumes:
-  - '*'
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -273,3 +220,34 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: gravity:coredns
+---
+# ClusterRole for the autoscaler to list nodes and manage deployments/replicasets scale
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-proportional-autoscaler-coredns
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+    resourceNames: ["autoscaler-coredns-worker", "autoscaler-coredns-master"]
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments/scale", "replicasets/scale"]
+    verbs: ["get", "update"]
+
+# ClusterRoleBinding for the autoscaler ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-proportional-autoscaler-coredns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-proportional-autoscaler-coredns
+subjects:
+  - kind: ServiceAccount
+    name: cluster-proportional-autoscaler-coredns
+    namespace: kube-system
